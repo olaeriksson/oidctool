@@ -100,6 +100,18 @@ Generates `.AppImage` and `.deb` packages in the `dist/` directory:
 npm run package:linux
 ```
 
+#### Running the AppImage:
+```bash
+chmod +x dist/*.AppImage
+"./dist/OIDC Tool-0.1.0.AppImage" --no-sandbox
+```
+*(On Ubuntu 24.04+, `--no-sandbox` is required when invoking directly from the terminal due to AppArmor unprivileged user namespace restrictions).*
+
+#### Installing the Native Debian/Ubuntu Package (.deb):
+```bash
+sudo dpkg -i dist/oidctool_0.1.0_amd64.deb
+```
+
 ### Build for Windows
 
 Generates an NSIS setup installer (`.exe`) and a portable `.zip` archive:
@@ -124,15 +136,16 @@ npm run package:dir
 ## Troubleshooting (Linux)
 
 ### SUID Sandbox / User Namespaces on Ubuntu 24.04+
-On recent Linux distributions like Ubuntu 24.04 LTS, unprivileged user namespaces are restricted by default. If you encounter the following error when running `electron .`:
-```text
-FATAL:setuid_sandbox_host.cc(163)] The SUID sandbox helper binary was found, but is not configured correctly.
-```
-- **Development**: The `npm start` and `npm run dev` scripts already include `--no-sandbox` to allow running without root SUID configuration.
-- **Alternative (system-wide)**: You can temporarily allow unprivileged user namespaces via sysctl:
+On Ubuntu 24.04 LTS, unprivileged user namespaces are restricted by default.
+- **Running AppImage**: Always pass `--no-sandbox` when running directly from the terminal:
+  ```bash
+  "./dist/OIDC Tool-0.1.0.AppImage" --no-sandbox
+  ```
+- **Alternative (system-wide sysctl)**: Temporarily allow unprivileged user namespaces system-wide:
   ```bash
   sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
   ```
+- **Native Package (.deb)**: Install the `.deb` package (`sudo dpkg -i dist/oidctool_*.deb`), which integrates directly with the system desktop launcher.
 
 ---
 
