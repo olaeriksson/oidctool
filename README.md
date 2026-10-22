@@ -104,9 +104,25 @@ oidctool/
 
 ---
 
+## Troubleshooting (Linux)
+
+### SUID Sandbox / User Namespaces on Ubuntu 24.04+
+On recent Linux distributions like Ubuntu 24.04 LTS, unprivileged user namespaces are restricted by default. If you encounter the following error when running `electron .`:
+```text
+FATAL:setuid_sandbox_host.cc(163)] The SUID sandbox helper binary was found, but is not configured correctly.
+```
+- **Development**: The `npm start` and `npm run dev` scripts already include `--no-sandbox` to allow running without root SUID configuration.
+- **Alternative (system-wide)**: You can temporarily allow unprivileged user namespaces via sysctl:
+  ```bash
+  sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+  ```
+
+---
+
 ## Development Guidelines
 
 1. **Language**: English only across all codebase files, identifiers, and documentation.
 2. **Open Source Quality**: Keep code clean, modular, and never commit secrets or environment credentials.
 3. **Packaging Integrity**: Whenever the application structure or dependencies change, packaging configurations in `package.json` must be updated and verified for both Linux and Windows.
 4. **Continuous Documentation**: Update this `README.md` file whenever features, installation steps, or requirements change.
+
