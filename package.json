@@ -3,7 +3,11 @@
   "version": "0.1.0",
   "description": "Cross-platform desktop application for OpenID Connect (OIDC) workflows and testing",
   "main": "src/main/main.js",
-  "author": "Open Source Contributors",
+  "author": {
+    "name": "Ola Eriksson",
+    "email": "oidctool@olae.io"
+  },
+  "homepage": "https://github.com/olaeriksson/oidctool",
   "license": "MIT",
   "scripts": {
     "start": "electron . --no-sandbox",
@@ -18,7 +22,7 @@
     "electron-builder": "^25.1.8"
   },
   "build": {
-    "appId": "com.oidctool.app",
+    "appId": "io.olae.oidctool",
     "productName": "OIDC Tool",
     "directories": {
       "output": "dist"
@@ -32,7 +36,16 @@
         "AppImage",
         "deb"
       ],
-      "category": "Development"
+      "category": "Development",
+      "maintainer": "oidctool@olae.io",
+      "executableArgs": [
+        "--no-sandbox"
+      ]
+    },
+    "appImage": {
+      "executableArgs": [
+        "--no-sandbox"
+      ]
     },
     "win": {
       "target": [
