@@ -1,4 +1,4 @@
-// Renderer UI Logic for OIDC Troubleshooting & Clavister Emulation Suite
+// Renderer UI logic for OIDC Tool
 
 let clientPresets = [];
 let currentPreset = null;
@@ -95,11 +95,11 @@ async function loadSystemInfo() {
   try {
     if (window.api && window.api.getAppInfo) {
       const info = await window.api.getAppInfo();
-      platformBadge.textContent = `${info.platform} (${info.arch})`;
-      footerSystemInfo.textContent = `OIDC Tool v${info.version} • Node ${info.nodeVersion} • Electron ${info.electronVersion}`;
+      if (platformBadge) platformBadge.textContent = `${info.platform} (${info.arch})`;
+      if (footerSystemInfo) footerSystemInfo.textContent = `v${info.version}`;
     }
   } catch (err) {
-    platformBadge.textContent = 'Desktop';
+    if (platformBadge) platformBadge.textContent = 'Desktop';
   }
 }
 
@@ -335,7 +335,7 @@ async function handleStartLogin() {
     console.error('Login execution error:', err);
   } finally {
     btnLogin.disabled = false;
-    btnLoginText.textContent = 'Start OIDC Login & Emulation';
+    btnLoginText.textContent = 'Start OIDC Login';
   }
 }
 
@@ -380,7 +380,7 @@ function renderExecutionResults(result, clientId) {
     const user = result.tokens.idToken?.payload?.upn || result.tokens.idToken?.payload?.email || 'User';
     updateStatusBanner(
       'success',
-      'Authentication & Emulation Successful',
+      'Authentication Successful',
       `Tokens successfully obtained and decoded for ${user}. Diagnostics generated.`
     );
   } else {

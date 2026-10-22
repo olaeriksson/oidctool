@@ -4,54 +4,36 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:;">
-  <title>OIDC Tool - Clavister & Entra ID Emulation Suite</title>
+  <title>OIDC Tool</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="app-layout">
-    <!-- Header -->
-    <header class="app-header">
-      <div class="brand">
-        <div class="logo-badge">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-          </svg>
-        </div>
-        <div class="brand-text">
-          <h1>OIDC Tool</h1>
-          <span class="brand-subtitle">Clavister Firewall &amp; OneConnect Emulation</span>
-        </div>
-      </div>
-      <div class="header-actions">
-        <button id="btn-clear-session" class="btn btn-secondary btn-sm" title="Clear cached browser cookies to force account selection">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="1 4 1 10 7 10"></polyline>
-            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
-          </svg>
-          Clear Login Cache
-        </button>
-        <span class="badge badge-platform" id="platform-badge">Detecting...</span>
-      </div>
-    </header>
-
-    <!-- Main Container -->
+    <!-- Main Split View (Top menu bar removed) -->
     <div class="main-container">
       <!-- Left / Configuration Sidebar -->
       <aside class="sidebar-config">
         <div class="sidebar-header">
-          <h2>Configuration</h2>
-          <span class="sidebar-caption">Firewall &amp; Client Emulation</span>
+          <div class="sidebar-title-row">
+            <h2>Configuration</h2>
+            <button id="btn-clear-session" class="btn btn-secondary btn-xs" title="Clear cached browser cookies to force account selection">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="1 4 1 10 7 10"></polyline>
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+              </svg>
+              Clear Cache
+            </button>
+          </div>
         </div>
 
         <form id="oidc-form" class="config-form" onsubmit="return false;">
           <!-- Preset Selector -->
           <div class="form-group">
-            <label for="select-preset">Client Preset to Emulate</label>
+            <label for="select-preset">Client Preset</label>
             <select id="select-preset" class="form-control">
               <!-- Populated dynamically -->
             </select>
-            <span class="field-hint" id="preset-description">Emulates Clavister OneConnect authentication flow.</span>
+            <span class="field-hint" id="preset-description"></span>
           </div>
 
           <!-- Discovery Endpoint -->
@@ -67,12 +49,12 @@
               placeholder="https://login.microsoftonline.com/{tenant-id}/v2.0/.well-known/openid-configuration" 
               required
             >
-            <span class="field-hint">Configured in Clavister firewall under OIDC Server.</span>
+            <span class="field-hint">OIDC Server discovery endpoint.</span>
           </div>
 
           <!-- Client ID -->
           <div class="form-group">
-            <label for="input-client-id">OIDC Client ID (App ID)</label>
+            <label for="input-client-id">OIDC Client ID</label>
             <input 
               type="text" 
               id="input-client-id" 
@@ -80,12 +62,12 @@
               placeholder="e.g. d4b1f394-2f04-467c-a2c4-9d2f8f507525" 
               required
             >
-            <span class="field-hint">Configured in Clavister firewall &amp; Entra ID App Registration.</span>
+            <span class="field-hint">Application (client) ID.</span>
           </div>
 
           <!-- Redirect URI -->
           <div class="form-group">
-            <label for="select-redirect-uri">Redirect URI (Callback)</label>
+            <label for="select-redirect-uri">Redirect URI</label>
             <select id="select-redirect-uri" class="form-control font-mono">
               <!-- Populated by preset -->
             </select>
@@ -95,7 +77,7 @@
               class="form-control font-mono mt-1 hidden" 
               placeholder="http://127.0.0.1/oneconnect/oauth"
             >
-            <span class="field-hint">Intercepted internally by Electron (no local port 80 required).</span>
+            <span class="field-hint">Intercepted internally by the application.</span>
           </div>
 
           <!-- Collapsible Advanced Settings -->
@@ -110,7 +92,7 @@
               <div class="form-group">
                 <label for="input-client-secret">Client Secret (Optional)</label>
                 <input type="password" id="input-client-secret" class="form-control font-mono" placeholder="Leave blank for Public Client (PKCE)">
-                <span class="field-hint">OneConnect uses Public Client (PKCE). Only enter if configured as confidential.</span>
+                <span class="field-hint">Only required if configured as a confidential client.</span>
               </div>
 
               <div class="form-checkbox">
@@ -132,7 +114,7 @@
               <polyline points="10 17 15 12 10 7"></polyline>
               <line x1="15" y1="12" x2="3" y2="12"></line>
             </svg>
-            <span id="btn-login-text">Start OIDC Login &amp; Emulation</span>
+            <span id="btn-login-text">Start OIDC Login</span>
           </button>
         </form>
       </aside>
@@ -143,43 +125,43 @@
         <div id="status-banner" class="status-banner info">
           <div class="status-indicator"></div>
           <div class="status-message">
-            <strong id="status-title">Ready for troubleshooting</strong>
-            <span id="status-subtitle">Enter your OIDC Discovery Endpoint and Client ID to initiate authentication.</span>
+            <strong id="status-title">Ready</strong>
+            <span id="status-subtitle">Enter Discovery Endpoint and Client ID to initiate authentication.</span>
           </div>
         </div>
 
         <!-- Navigation Tabs -->
         <nav class="tabs-nav">
           <button class="tab-btn active" data-tab="tab-diagnostics">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-            Clavister Diagnostics
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            Diagnostics
           </button>
           <button class="tab-btn" data-tab="tab-identity">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
             User Identity &amp; Groups
           </button>
           <button class="tab-btn" data-tab="tab-tokens">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
             Tokens &amp; Claims (JWT)
           </button>
           <button class="tab-btn" data-tab="tab-transactions">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-            Raw HTTP Transactions
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+            HTTP Transactions
           </button>
           <button class="tab-btn" data-tab="tab-timeline">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
-            Emulation Log
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+            Execution Log
           </button>
         </nav>
 
         <!-- Tab Contents -->
         <div class="tabs-container">
-          <!-- Tab 1: Clavister Diagnostics -->
+          <!-- Tab 1: Diagnostics -->
           <div id="tab-diagnostics" class="tab-content active">
             <div id="diagnostics-empty" class="empty-placeholder">
               <div class="empty-icon">🛡️</div>
               <h3>No Active Session</h3>
-              <p>Execute an authentication flow to analyze tokens, group claims, and compatibility with Clavister firewall policies.</p>
+              <p>Execute an authentication flow to analyze tokens, group claims, and compatibility.</p>
             </div>
             <div id="diagnostics-list" class="diagnostics-cards hidden">
               <!-- Dynamically populated -->
@@ -206,14 +188,14 @@
               </div>
 
               <div class="claims-table-card">
-                <h4>Primary Clavister Mapping Claims</h4>
+                <h4>Primary User Claims</h4>
                 <div class="table-responsive">
                   <table class="data-table" id="table-primary-claims">
                     <thead>
                       <tr>
                         <th>Claim</th>
                         <th>Value</th>
-                        <th>Clavister Firewall Usage</th>
+                        <th>Usage / Description</th>
                       </tr>
                     </thead>
                     <tbody id="tbody-primary-claims"></tbody>
@@ -243,7 +225,7 @@
             <div id="tokens-details" class="tokens-layout hidden">
               <!-- Token Selector Tabs -->
               <div class="subtabs-bar">
-                <button class="subtab-btn active" data-subtab="subtab-id-token">ID Token (Used by Firewall)</button>
+                <button class="subtab-btn active" data-subtab="subtab-id-token">ID Token</button>
                 <button class="subtab-btn" data-subtab="subtab-access-token">Access Token</button>
                 <button class="subtab-btn" data-subtab="subtab-refresh-token">Refresh Token</button>
               </div>
@@ -260,7 +242,7 @@
 
                 <div class="token-section">
                   <div class="token-header-bar">
-                    <h4>Token Header (Metadata &amp; Algorithm)</h4>
+                    <h4>Token Header</h4>
                     <button class="btn btn-secondary btn-xs btn-copy" data-target="json-id-header">Copy JSON</button>
                   </div>
                   <pre class="code-block json-view" id="json-id-header">{}</pre>
@@ -312,13 +294,13 @@
             <div id="transactions-empty" class="empty-placeholder">
               <div class="empty-icon">📡</div>
               <h3>No Transactions Recorded</h3>
-              <p>Full HTTP request and response payloads exchanged with Entra ID will appear here.</p>
+              <p>Full HTTP request and response payloads exchanged with the identity provider will appear here.</p>
             </div>
             <div id="transactions-details" class="transactions-layout hidden">
               <div class="transaction-card">
                 <div class="trans-header">
                   <span class="http-badge http-get">GET</span>
-                  <span class="trans-title">Authorization Request (Client / Browser)</span>
+                  <span class="trans-title">Authorization Request</span>
                 </div>
                 <div class="trans-body">
                   <label>Full Request URL:</label>
@@ -342,21 +324,21 @@
               <div class="transaction-card">
                 <div class="trans-header">
                   <span class="http-badge http-post">POST</span>
-                  <span class="trans-title">Token Request (Firewall / Client Token Exchange)</span>
+                  <span class="trans-title">Token Request &amp; Response</span>
                 </div>
                 <div class="trans-body">
-                  <label>Endpoint:</label>
+                  <label>Token Endpoint:</label>
                   <pre class="code-block font-mono" id="tx-token-endpoint">-</pre>
                   <label class="mt-1">POST Body Parameters:</label>
                   <pre class="code-block json-view" id="tx-token-request-body">{}</pre>
-                  <label class="mt-1">Response (HTTP Status &amp; Payload):</label>
+                  <label class="mt-1">Response (HTTP Status &amp; Body):</label>
                   <pre class="code-block json-view" id="tx-token-response-body">{}</pre>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Tab 5: Emulation Log -->
+          <!-- Tab 5: Execution Log -->
           <div id="tab-timeline" class="tab-content">
             <div class="timeline-container">
               <div class="timeline-header-bar">
@@ -369,7 +351,7 @@
                   <div class="timeline-content">
                     <div class="timeline-time">Ready</div>
                     <div class="timeline-title">Application initialized</div>
-                    <div class="timeline-details">Awaiting user input to begin OIDC emulation.</div>
+                    <div class="timeline-details">Awaiting user input to begin OIDC authentication.</div>
                   </div>
                 </li>
               </ul>
@@ -378,12 +360,6 @@
         </div>
       </main>
     </div>
-
-    <!-- Footer -->
-    <footer class="app-footer">
-      <span id="footer-system-info">Initializing environment...</span>
-      <span>OIDC Troubleshooting &amp; Emulation Tool • Open Source (MIT)</span>
-    </footer>
   </div>
 
   <script src="renderer.js"></script>

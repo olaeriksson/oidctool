@@ -21,8 +21,8 @@ function createWindow() {
     height: 880,
     minWidth: 980,
     minHeight: 650,
-    backgroundColor: '#0b0f19',
-    title: 'OIDC Tool - Troubleshooting & Emulation Suite',
+    backgroundColor: '#f8fafc',
+    title: 'OIDC Tool',
     webPreferences: {
       preload: path.join(__dirname, '../preload/preload.js'),
       nodeIntegration: false,
