@@ -1,0 +1,48 @@
+{
+  "name": "oidctool",
+  "version": "0.1.0",
+  "description": "Cross-platform desktop application for OpenID Connect (OIDC) workflows and testing",
+  "main": "src/main/main.js",
+  "author": "Open Source Contributors",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "package:dir": "electron-builder --dir",
+    "package:linux": "electron-builder --linux",
+    "package:win": "electron-builder --win",
+    "package:all": "electron-builder --linux --win"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.oidctool.app",
+    "productName": "OIDC Tool",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Development"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "zip"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}
