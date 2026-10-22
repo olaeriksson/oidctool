@@ -70,6 +70,17 @@ npm start
 
 ## How to Troubleshoot Clavister & Entra ID
 
+### Option A: Automatic Import from Entra ID Manifest
+1. Click the **Import info** button in the top of the Configuration panel and select **EntraID App Manifest**.
+2. Paste the JSON manifest from your Entra ID App registration (*Entra ID &rarr; App registrations &rarr; Manifest*).
+3. Click **Parse & Apply**. The tool will automatically:
+   - Extract and populate the **Client ID** (`appId`).
+   - Extract registered **Redirect URIs** and select `http://127.0.0.1/oneconnect/oauth`.
+   - Match the **Clavister OneConnect** profile.
+   - Infer the OIDC Discovery Endpoint from `publisherDomain` (if available).
+   - Flag any policy warnings (e.g. if `groupMembershipClaims` is disabled).
+
+### Option B: Manual Configuration
 1. **Select Client Preset**: Choose **Clavister OneConnect (VPN)**.
 2. **Enter Discovery Endpoint**:
    Copy the OIDC Discovery Endpoint configured in your Clavister firewall (e.g. `https://login.microsoftonline.com/<TENANT_ID>/v2.0/.well-known/openid-configuration`).
@@ -79,12 +90,12 @@ npm start
 4. **Choose Redirect URI**:
    Select `http://127.0.0.1/oneconnect/oauth` (default) or `com.clavister.oneconnect://oauth/`.
 5. **Start Login**:
-   Click **Start OIDC Login & Emulation**. An interactive Microsoft sign-in window will open.
+   Click **Start OIDC Login**. An interactive Microsoft sign-in window will open.
    Log in with your corporate account (supports MFA, Conditional Access, and FIDO2).
 6. **Analyze Results**:
-   - Check the **Clavister Diagnostics** tab to see if your account contains the necessary UPN/email and group claims.
+   - Check the **Diagnostics** tab to see if your account contains the necessary UPN/email and group claims.
    - If groups are missing, verify that `groupMembershipClaims` is set to `"SecurityGroup"` or `"All"` in your Entra ID application manifest.
-   - Inspect **Tokens & Claims** and **Raw HTTP Transactions** to review the exact payloads exchanged with Entra ID.
+   - Inspect **Tokens & Claims** and **HTTP Transactions** to review the exact payloads exchanged with Entra ID.
 
 ---
 

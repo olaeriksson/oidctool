@@ -2,6 +2,8 @@
 
 let clientPresets = [];
 let currentPreset = null;
+let availableImporters = [];
+let activeImporter = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   initTabs();
@@ -9,6 +11,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   initCopyButtons();
   await loadSystemInfo();
   await loadPresets();
+  await initImporters();
+  initImportModal();
   restoreSavedFormValues();
   bindFormEvents();
 });
@@ -178,6 +182,229 @@ function applyPreset(preset) {
   }
 
   document.getElementById('check-pkce').checked = preset.requiresPkce ?? true;
+}
+
+/**
+ * Initialize Extensible Importers and Dropdown
+ */
+async function initImporters() {
+  const menuEl = document.getElementById('menu-import-options');
+  const toggleBtn = document.getElementById('btn-import-toggle');
+  const dropdownEl = document.getElementById('dropdown-import');
+
+  try {
+    if (window.api && window.api.getImporters) {
+      availableImporters = await window.api.getImporters();
+    } else {
+      availableImporters = [];
+    }
+  } catch (err) {
+    console.error('Failed to load importers:', err);
+    availableImporters = [];
+  }
+
+  menuEl.innerHTML = '';
+  availableImporters.forEach((imp) => {
+    const itemBtn = document.createElement('button');
+    itemBtn.type = 'button';
+    itemBtn.className = 'dropdown-item';
+    itemBtn.innerHTML = `
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
+      </svg>
+      <span>${escapeHtml(imp.name)}</span>
+    `;
+    itemBtn.addEventListener('click', () => {
+      menuEl.classList.add('hidden');
+      openImportModal(imp);
+    });
+    menuEl.appendChild(itemBtn);
+  });
+
+  // Toggle dropdown
+  toggleBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    menuEl.classList.toggle('hidden');
+  });
+
+  // Close dropdown on outside click
+  document.addEventListener('click', (e) => {
+    if (!dropdownEl.contains(e.target)) {
+      menuEl.classList.add('hidden');
+    }
+  });
+}
+
+/**
+ * Open Import Modal for Selected Importer
+ */
+function openImportModal(importer) {
+  activeImporter = importer;
+  document.getElementById('modal-import-title').textContent = `Import ${importer.name}`;
+  document.getElementById('modal-import-desc').textContent = importer.description;
+
+  const textarea = document.getElementById('textarea-import-content');
+  textarea.placeholder = importer.placeholder || 'Paste configuration content here...';
+  textarea.value = '';
+
+  const feedback = document.getElementById('modal-import-feedback');
+  feedback.className = 'modal-feedback hidden';
+  feedback.innerHTML = '';
+
+  const modal = document.getElementById('modal-import');
+  modal.classList.remove('hidden');
+  textarea.focus();
+}
+
+/**
+ * Close Import Modal
+ */
+function closeImportModal() {
+  const modal = document.getElementById('modal-import');
+  modal.classList.add('hidden');
+}
+
+/**
+ * Bind Import Modal Actions
+ */
+function initImportModal() {
+  const modal = document.getElementById('modal-import');
+  const btnClose = document.getElementById('btn-modal-close');
+  const btnCancel = document.getElementById('btn-modal-cancel');
+  const btnApply = document.getElementById('btn-modal-apply');
+  const textarea = document.getElementById('textarea-import-content');
+  const feedback = document.getElementById('modal-import-feedback');
+
+  btnClose.addEventListener('click', closeImportModal);
+  btnCancel.addEventListener('click', closeImportModal);
+
+  // Close on backdrop click
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeImportModal();
+    }
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+      closeImportModal();
+    }
+  });
+
+  // Parse and apply configuration
+  btnApply.addEventListener('click', async () => {
+    if (!activeImporter) return;
+
+    const rawText = textarea.value.trim();
+    if (!rawText) {
+      feedback.className = 'modal-feedback error';
+      feedback.textContent = 'Please paste the manifest or configuration content first.';
+      feedback.classList.remove('hidden');
+      return;
+    }
+
+    btnApply.disabled = true;
+    btnApply.textContent = 'Parsing...';
+
+    try {
+      const res = await window.api.parseImport(activeImporter.id, rawText);
+      if (!res.success) {
+        feedback.className = 'modal-feedback error';
+        feedback.textContent = res.error || 'Failed to parse configuration.';
+        feedback.classList.remove('hidden');
+        return;
+      }
+
+      applyImportedData(res.data);
+      closeImportModal();
+    } catch (err) {
+      feedback.className = 'modal-feedback error';
+      feedback.textContent = `Error: ${err.message}`;
+      feedback.classList.remove('hidden');
+    } finally {
+      btnApply.disabled = false;
+      btnApply.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        Parse &amp; Apply
+      `;
+    }
+  });
+}
+
+/**
+ * Apply Imported Configuration to the Form
+ */
+function applyImportedData(data) {
+  // 1. Select suggested preset if provided
+  if (data.suggestedPresetId) {
+    const presetSelect = document.getElementById('select-preset');
+    const matchedPreset = clientPresets.find((p) => p.id === data.suggestedPresetId);
+    if (matchedPreset) {
+      presetSelect.value = matchedPreset.id;
+      applyPreset(matchedPreset);
+    }
+  }
+
+  // 2. Set Client ID
+  if (data.clientId) {
+    document.getElementById('input-client-id').value = data.clientId;
+  }
+
+  // 3. Populate and select Redirect URIs
+  const redirectSelect = document.getElementById('select-redirect-uri');
+  if (Array.isArray(data.redirectUris) && data.redirectUris.length > 0) {
+    redirectSelect.innerHTML = '';
+    data.redirectUris.forEach((uri) => {
+      const opt = document.createElement('option');
+      opt.value = uri;
+      opt.textContent = uri;
+      if (uri === data.selectedRedirectUri) {
+        opt.selected = true;
+      }
+      redirectSelect.appendChild(opt);
+    });
+  }
+
+  // 4. Set Suggested Discovery URL if field is currently empty
+  const discoveryInput = document.getElementById('input-discovery');
+  if (data.suggestedDiscoveryUrl && !discoveryInput.value) {
+    discoveryInput.value = data.suggestedDiscoveryUrl;
+  }
+
+  // 5. Set PKCE
+  if (typeof data.isPublicClient === 'boolean') {
+    document.getElementById('check-pkce').checked = data.isPublicClient;
+  }
+
+  // 6. Set Scopes if provided
+  if (data.suggestedScope) {
+    document.getElementById('input-scope').value = data.suggestedScope;
+  }
+
+  // 7. Save form values to storage
+  saveFormValues();
+
+  // 8. Status Banner notification
+  const appName = data.displayName || 'Application';
+  let bannerMessage = `Imported settings for "${appName}". Client ID set to ${data.clientId} with ${data.redirectUris.length} redirect URI(s).`;
+
+  if (data.insights && data.insights.length > 0) {
+    const warning = data.insights.find((i) => i.level === 'warning');
+    if (warning) {
+      bannerMessage += ` Note: ${warning.message}`;
+      updateStatusBanner('warning', `Imported: ${appName}`, bannerMessage);
+      return;
+    }
+  }
+
+  updateStatusBanner('success', `Imported: ${appName}`, bannerMessage);
 }
 
 /**

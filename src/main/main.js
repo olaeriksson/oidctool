@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, session } = require('electron');
 const path = require('path');
 const { CLIENT_PRESETS } = require('./presets/clients');
+const { getAvailableImporters, parseWithImporter } = require('./importers');
 const {
   fetchDiscoveryDocument,
   generatePkcePair,
@@ -68,6 +69,27 @@ ipcMain.handle('app:get-info', () => {
 // Provide client presets
 ipcMain.handle('oidc:get-presets', () => {
   return CLIENT_PRESETS;
+});
+
+// Provide available importers
+ipcMain.handle('oidc:get-importers', () => {
+  return getAvailableImporters();
+});
+
+// Parse imported configuration
+ipcMain.handle('oidc:parse-import', async (_event, { importerId, rawText }) => {
+  try {
+    const data = parseWithImporter(importerId, rawText);
+    return {
+      success: true,
+      data,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      error: err.message,
+    };
+  }
 });
 
 // Fetch discovery document

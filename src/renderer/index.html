@@ -16,13 +16,29 @@
         <div class="sidebar-header">
           <div class="sidebar-title-row">
             <h2>Configuration</h2>
-            <button id="btn-clear-session" class="btn btn-secondary btn-xs" title="Clear cached browser cookies to force account selection">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="1 4 1 10 7 10"></polyline>
-                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
-              </svg>
-              Clear Cache
-            </button>
+            <div class="sidebar-actions">
+              <div class="dropdown" id="dropdown-import">
+                <button type="button" id="btn-import-toggle" class="btn btn-secondary btn-xs dropdown-toggle" title="Import configuration from external format">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  Import info
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </button>
+                <div class="dropdown-menu hidden" id="menu-import-options">
+                  <!-- Populated dynamically from registered importers -->
+                </div>
+              </div>
+              <button id="btn-clear-session" class="btn btn-secondary btn-xs" title="Clear cached browser cookies to force account selection">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="1 4 1 10 7 10"></polyline>
+                  <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                </svg>
+                Clear Cache
+              </button>
+            </div>
           </div>
         </div>
 
@@ -359,6 +375,40 @@
           </div>
         </div>
       </main>
+    </div>
+  </div>
+
+  <!-- Import Modal Dialog -->
+  <div id="modal-import" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-import-title">Import EntraID App Manifest</h3>
+        <button type="button" id="btn-modal-close" class="btn-close" title="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="modal-import-desc" class="modal-description">
+          Paste the raw JSON manifest from Microsoft Entra ID (App registrations &rarr; Manifest).
+        </p>
+        <div class="form-group">
+          <textarea 
+            id="textarea-import-content" 
+            class="modal-textarea font-mono" 
+            rows="12" 
+            placeholder="Paste JSON manifest here..." 
+            spellcheck="false"
+          ></textarea>
+        </div>
+        <div id="modal-import-feedback" class="modal-feedback hidden"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btn-modal-cancel" class="btn btn-secondary btn-sm">Cancel</button>
+        <button type="button" id="btn-modal-apply" class="btn btn-primary btn-sm">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          Parse &amp; Apply
+        </button>
+      </div>
     </div>
   </div>
 
