@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, session } = require('electron');
+const { app, BrowserWindow, ipcMain, session, shell } = require('electron');
 const path = require('path');
 const { CLIENT_PRESETS } = require('./presets/clients');
 const { getAvailableImporters, parseWithImporter } = require('./importers');
@@ -64,6 +64,15 @@ ipcMain.handle('app:get-info', () => {
     nodeVersion: process.versions.node,
     electronVersion: process.versions.electron,
   };
+});
+
+// Open external URL in system default browser
+ipcMain.handle('app:open-external', async (_event, url) => {
+  if (url && (url.startsWith('https://') || url.startsWith('http://'))) {
+    await shell.openExternal(url);
+    return { success: true };
+  }
+  return { success: false, error: 'Invalid URL' };
 });
 
 // Provide client presets

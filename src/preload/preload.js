@@ -8,4 +8,5 @@ contextBridge.exposeInMainWorld('api', {
   clearSession: () => ipcRenderer.invoke('oidc:clear-session'),
   getImporters: () => ipcRenderer.invoke('oidc:get-importers'),
   parseImport: (importerId, rawText) => ipcRenderer.invoke('oidc:parse-import', { importerId, rawText }),
+  openExternal: (url) => ipcRenderer.invoke('app:open-external', url),
 });

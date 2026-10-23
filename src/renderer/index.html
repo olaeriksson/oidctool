@@ -133,6 +133,11 @@
             <span id="btn-login-text">Start OIDC Login</span>
           </button>
         </form>
+
+        <div class="sidebar-footer">
+          <span class="sidebar-copyright">&copy; 2026 Ola Eriksson</span>
+          <button type="button" id="btn-open-about" class="btn-link-about">About</button>
+        </div>
       </aside>
 
       <!-- Right / Results Content Area -->
@@ -495,6 +500,58 @@
       </div>
       <div class="modal-footer">
         <button type="button" id="btn-field-info-dismiss" class="btn btn-secondary btn-sm">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- About Modal Dialog -->
+  <div id="modal-about" class="modal-overlay hidden">
+    <div class="modal-card modal-card-about">
+      <div class="modal-header">
+        <div class="about-title-row">
+          <div class="about-logo-badge">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </div>
+          <div>
+            <h3>OIDC Tool</h3>
+            <span class="about-version" id="about-app-version">v0.1.0</span>
+          </div>
+        </div>
+        <button type="button" id="btn-about-close" class="btn-close" title="Close">&times;</button>
+      </div>
+      <div class="modal-body about-modal-body">
+        <p class="about-lead">
+          Designed and developed by <strong>Ola Eriksson</strong> for network and security professionals.
+        </p>
+        <p class="about-text">
+          Created to streamline testing, inspection, and troubleshooting of OpenID Connect (OIDC) authentication flows between Identity Providers (like Microsoft Entra ID) and network firewall appliances, specifically optimized for <strong>Clavister NetWall</strong> and <strong>OneConnect VPN</strong>.
+        </p>
+
+        <div class="about-links-section">
+          <div class="about-link-row">
+            <span class="about-link-label">Project Repository:</span>
+            <a href="https://github.com/olaeriksson/oidctool" class="external-link" target="_blank" rel="noopener noreferrer">
+              github.com/olaeriksson/oidctool
+            </a>
+          </div>
+          <div class="about-link-row">
+            <span class="about-link-label">Developer Profile:</span>
+            <a href="https://github.com/olaeriksson" class="external-link" target="_blank" rel="noopener noreferrer">
+              github.com/olaeriksson
+            </a>
+          </div>
+        </div>
+
+        <div class="about-legal-box">
+          <div>Copyright &copy; 2026 Ola Eriksson.</div>
+          <div>Released as open source under the MIT License.</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btn-about-dismiss" class="btn btn-secondary btn-sm">Close</button>
       </div>
     </div>
   </div>

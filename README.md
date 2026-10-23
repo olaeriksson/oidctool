@@ -31,10 +31,27 @@ Built with **JavaScript**, **Node.js**, and **Electron**, targeting both **Linux
 ## Project Overview
 
 - **License**: MIT (Open Source)
+- **Author**: [Ola Eriksson](https://github.com/olaeriksson)
+- **Repository**: [https://github.com/olaeriksson/oidctool](https://github.com/olaeriksson/oidctool)
 - **Target Platforms**: Linux (AppImage, .deb) and Windows (NSIS installer .exe, portable .zip)
 - **Framework**: Electron
 - **Language**: JavaScript / Node.js
 - **Language Policy**: All source code, documentation, identifiers, commits, and UI copy are maintained strictly in **English**.
+
+---
+
+## About the Author & Background
+
+This tool was designed and developed by **Ola Eriksson**.
+
+As a network and cybersecurity specialist working daily with the design, architecture, and implementation of network and firewall solutions of all scales, I repeatedly encountered the need for a dedicated inspection tool when configuring and testing OpenID Connect (OIDC) single sign-on (SSO) integrations. 
+
+In enterprise deployments—such as connecting client VPNs to Microsoft Entra ID (formerly Azure AD)—troubleshooting issues like redirect misconfigurations, missing token claims, omitted user group memberships, or tenant manifest errors can be time-consuming without deep visibility into the exact token exchange.
+
+I work extensively with **Clavister NetWall** next-generation firewalls, which is why **OIDC Tool** is tailored specifically for Clavister environments, featuring preconfigured Clavister OneConnect emulation profiles, internal redirect handling, and automated Entra ID Manifest auditing. However, because it is built upon standard OpenID Connect specifications, it works seamlessly for testing and troubleshooting other OIDC client integrations and identity providers as well.
+
+- **GitHub Profile**: [https://github.com/olaeriksson](https://github.com/olaeriksson)
+- **Project Repository**: [https://github.com/olaeriksson/oidctool](https://github.com/olaeriksson/oidctool)
 
 ---
 
@@ -52,7 +69,7 @@ Built with **JavaScript**, **Node.js**, and **Electron**, targeting both **Linux
 Clone the repository and install dependencies:
 
 ```bash
-git clone https://github.com/your-org/oidctool.git
+git clone https://github.com/olaeriksson/oidctool.git
 cd oidctool
 npm install
 ```
@@ -182,14 +199,17 @@ oidctool/
 │   │   ├── auth/
 │   │   │   ├── oidc-client.js # Discovery, PKCE, token exchange & diagnostics
 │   │   │   └── auth-window.js # Interactive login window & redirect interceptor
+│   │   ├── importers/
+│   │   │   ├── index.js       # Configuration importers registry
+│   │   │   └── entra-manifest.js # Entra ID manifest parser & audit engine
 │   │   └── presets/
 │   │       └── clients.js     # Extensible client profiles (OneConnect, custom)
 │   ├── preload/
 │   │   └── preload.js         # Secure contextBridge preload script
 │   └── renderer/
 │       ├── index.html         # Application UI structure
-│       ├── styles.css         # UI design system & dark theme styles
-│       └── renderer.js        # UI logic, claim renderers & transactions
+│       ├── styles.css         # UI design system & light enterprise theme
+│       └── renderer.js        # UI logic, claim renderers, audit & modals
 ├── .gitignore                 # Git ignore rules for node & build artifacts
 ├── AGENTS.md                  # Development rules and open-source standards
 ├── LICENSE                    # MIT Open Source License

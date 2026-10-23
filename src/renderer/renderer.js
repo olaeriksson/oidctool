@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await initImporters();
   initImportModal();
   initFieldInfoModal();
+  initAboutModal();
   restoreSavedFormValues();
   bindFormEvents();
 });
@@ -103,6 +104,8 @@ async function loadSystemInfo() {
       const info = await window.api.getAppInfo();
       if (platformBadge) platformBadge.textContent = `${info.platform} (${info.arch})`;
       if (footerSystemInfo) footerSystemInfo.textContent = `v${info.version}`;
+      const aboutVersion = document.getElementById('about-app-version');
+      if (aboutVersion && info.version) aboutVersion.textContent = `v${info.version}`;
     }
   } catch (err) {
     if (platformBadge) platformBadge.textContent = 'Desktop';
@@ -577,6 +580,69 @@ function initFieldInfoModal() {
     if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
       closeFieldInfoModal();
     }
+  });
+}
+
+/**
+ * Open About Modal
+ */
+function openAboutModal() {
+  const modal = document.getElementById('modal-about');
+  if (modal) modal.classList.remove('hidden');
+}
+
+/**
+ * Close About Modal
+ */
+function closeAboutModal() {
+  const modal = document.getElementById('modal-about');
+  if (modal) modal.classList.add('hidden');
+}
+
+/**
+ * Initialize About Modal Listeners and Safe External Link Handling
+ */
+function initAboutModal() {
+  const modal = document.getElementById('modal-about');
+  const btnOpen = document.getElementById('btn-open-about');
+  const btnClose = document.getElementById('btn-about-close');
+  const btnDismiss = document.getElementById('btn-about-dismiss');
+
+  if (btnOpen) {
+    btnOpen.addEventListener('click', openAboutModal);
+  }
+  if (btnClose) {
+    btnClose.addEventListener('click', closeAboutModal);
+  }
+  if (btnDismiss) {
+    btnDismiss.addEventListener('click', closeAboutModal);
+  }
+
+  // Close on backdrop click
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        closeAboutModal();
+      }
+    });
+  }
+
+  // Close on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
+      closeAboutModal();
+    }
+  });
+
+  // Handle external links safely via window.api.openExternal
+  document.querySelectorAll('.external-link').forEach((link) => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const href = link.getAttribute('href');
+      if (href && window.api && window.api.openExternal) {
+        window.api.openExternal(href);
+      }
+    });
   });
 }
 

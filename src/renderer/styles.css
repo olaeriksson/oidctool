@@ -1404,3 +1404,136 @@ label {
   color: #1e3a8a;
   font-weight: 500;
 }
+
+/* Sidebar Footer & About */
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.sidebar-copyright {
+  font-weight: 500;
+  color: var(--text-muted);
+  user-select: none;
+}
+
+.btn-link-about {
+  background: none;
+  border: none;
+  padding: 0.15rem 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.btn-link-about:hover {
+  color: #1e3a8a;
+  background-color: var(--border-color);
+}
+
+/* About Modal */
+.modal-card-about {
+  max-width: 520px !important;
+}
+
+.about-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.about-logo-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, var(--accent) 0%, #1e40af 100%);
+  color: #ffffff;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+}
+
+.about-version {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.about-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 1.25rem;
+}
+
+.about-lead {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.45;
+}
+
+.about-text {
+  font-size: 0.84rem;
+  color: #334155;
+  line-height: 1.5;
+}
+
+.about-links-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.about-link-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.about-link-label {
+  font-weight: 600;
+  color: #475569;
+}
+
+.about-link-row a {
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.about-link-row a:hover {
+  color: #1d4ed8;
+}
+
+.about-legal-box {
+  border-top: 1px solid var(--border-color);
+  padding-top: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
