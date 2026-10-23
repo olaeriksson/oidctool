@@ -308,7 +308,7 @@ function analyzeDiagnostics({ discovery, tokenResult, expectedClientId }) {
       diagnostics.push({
         level: 'info',
         title: 'No Group Claims in ID Token',
-        message: 'No "groups" claim found. Note: In the Entra ID application manifest, "groupMembershipClaims" must be set to "SecurityGroup" or "All" if you need group-based authorization in Clavister.',
+        message: 'No "groups" claim found. Note: In the Entra ID application manifest, "groupMembershipClaims" must be set to "SecurityGroup", "ApplicationGroup", or "All" if you need group-based authorization in Clavister.',
       });
     }
 

@@ -927,7 +927,7 @@ function renderIdentityAndGroups(payload, userInfo) {
     groupsCountBadge.className = 'badge';
     groupsList.innerHTML = `
       <li class="group-item" style="grid-column: 1 / -1; color: var(--text-muted);">
-        No group claims present in token. If Clavister policies require groups, enable "groupMembershipClaims": "SecurityGroup" in your Entra ID app registration.
+        No group claims present in token. If Clavister policies require groups, enable "groupMembershipClaims": "SecurityGroup" or "ApplicationGroup" in your Entra ID app registration.
       </li>
     `;
   }

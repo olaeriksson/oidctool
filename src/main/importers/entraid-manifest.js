@@ -167,7 +167,19 @@ class EntraIdManifestImporter {
     }
 
     // Check 2: Group Membership Claims
-    const gmc = manifest.groupMembershipClaims;
+    let gmc = manifest.groupMembershipClaims;
+    if (Array.isArray(gmc)) {
+      gmc = gmc[0] || null;
+    }
+
+    const standardGroupAllowedValues = [
+      { value: 'null (None)', description: 'No groups claim emitted.', clavisterImpact: 'Firewall rules based on AD groups will never match.' },
+      { value: '"SecurityGroup"', description: 'Emits security groups and directory roles as Object IDs.', clavisterImpact: 'Standard configuration for Clavister firewall group policies.' },
+      { value: '"ApplicationGroup"', description: 'Emits only groups explicitly assigned to the Enterprise Application.', clavisterImpact: 'Recommended enterprise security practice. Minimizes token size and prevents overage.' },
+      { value: '"All"', description: 'Emits all groups including distribution lists.', clavisterImpact: 'Higher risk of group overage (>200 groups).' },
+      { value: '"DirectoryRole"', description: 'Emits only Entra ID directory roles (e.g., Global Admin).', clavisterImpact: 'Standard user security groups are omitted.' },
+    ];
+
     if (gmc === 'SecurityGroup') {
       checks.push({
         id: 'group-claims',
@@ -178,14 +190,24 @@ class EntraIdManifestImporter {
         summary: 'Security groups are emitted in the ID token. Clavister firewall can match users against Active Directory Security Group Object IDs.',
         details: {
           description: 'Controls which user group memberships Microsoft Entra ID emits inside the "groups" claim of the ID token and access token.',
-          allowedValues: [
-            { value: 'null (None)', description: 'No groups claim emitted.', clavisterImpact: 'Firewall rules based on AD groups will never match.' },
-            { value: '"SecurityGroup"', description: 'Emits security groups and directory roles as Object IDs.', clavisterImpact: 'Recommended for Clavister firewall group policies.' },
-            { value: '"All"', description: 'Emits all groups including distribution lists.', clavisterImpact: 'Higher risk of group overage (>200 groups).' },
-            { value: '"DirectoryRole"', description: 'Emits only Entra ID directory roles (e.g., Global Admin).', clavisterImpact: 'Security groups are omitted.' },
-          ],
+          allowedValues: standardGroupAllowedValues,
           currentImpact: 'ID tokens will include security group GUIDs. In Clavister NetWall, configure User Groups matching these Entra ID Object IDs.',
-          recommendation: 'Keep as "SecurityGroup".',
+          recommendation: 'Good configuration for Clavister NetWall group-based firewall policies.',
+        },
+      });
+    } else if (gmc === 'ApplicationGroup') {
+      checks.push({
+        id: 'group-claims',
+        field: 'groupMembershipClaims',
+        label: 'Group Membership Claims',
+        status: 'pass',
+        currentValueDisplay: '"ApplicationGroup"',
+        summary: 'Application-assigned groups are emitted. Entra ID will only emit groups that are explicitly assigned to this application under Enterprise Applications -> Users and groups.',
+        details: {
+          description: 'Controls which user group memberships Microsoft Entra ID emits inside the "groups" claim. When set to "ApplicationGroup", only groups explicitly assigned to the Enterprise Application are included in the token.',
+          allowedValues: standardGroupAllowedValues,
+          currentImpact: 'Only groups assigned to this Enterprise App in Entra ID will be included in the user\'s token. If a user is a member of an AD group that is NOT assigned to this app under "Users and groups", that group will be omitted from the token.',
+          recommendation: 'Ensure all groups used in Clavister firewall rules are assigned to this application in Entra ID (Enterprise Applications -> Clavister OneConnect -> Users and groups).',
         },
       });
     } else if (gmc === 'All') {
@@ -198,13 +220,24 @@ class EntraIdManifestImporter {
         summary: 'All groups (security and distribution lists) are emitted. If a user belongs to more than ~150-200 groups, Entra ID triggers group overage.',
         details: {
           description: 'Controls which user group memberships Microsoft Entra ID emits inside the "groups" claim.',
-          allowedValues: [
-            { value: 'null (None)', description: 'No groups claim emitted.', clavisterImpact: 'Firewall group rules fail.' },
-            { value: '"SecurityGroup"', description: 'Emits security groups.', clavisterImpact: 'Clean, recommended.' },
-            { value: '"All"', description: 'Emits all groups.', clavisterImpact: 'May exceed token size if user has many DLs.' },
-          ],
+          allowedValues: standardGroupAllowedValues,
           currentImpact: 'All group types are included in tokens. Users with over 150-200 groups will receive a Graph overage link instead of inline groups.',
-          recommendation: 'Consider changing to "SecurityGroup" to reduce token bloat and prevent overage.',
+          recommendation: 'Consider changing to "SecurityGroup" or "ApplicationGroup" to reduce token size and prevent overage.',
+        },
+      });
+    } else if (gmc === 'DirectoryRole') {
+      checks.push({
+        id: 'group-claims',
+        field: 'groupMembershipClaims',
+        label: 'Group Membership Claims',
+        status: 'warn',
+        currentValueDisplay: '"DirectoryRole"',
+        summary: 'Only Entra ID directory roles (e.g. Global Administrator) are emitted. Standard Active Directory security groups will not be included.',
+        details: {
+          description: 'Controls which user group memberships Microsoft Entra ID emits inside the "groups" claim.',
+          allowedValues: standardGroupAllowedValues,
+          currentImpact: 'Standard security groups are omitted. Only administrative directory roles are emitted in the token.',
+          recommendation: 'Change to "SecurityGroup" or "ApplicationGroup" so regular user groups are emitted for Clavister firewall rules.',
         },
       });
     } else {
@@ -217,13 +250,9 @@ class EntraIdManifestImporter {
         summary: 'Group claims are disabled (null). Entra ID will not include user groups in the ID token. Any Clavister firewall policies that rely on group authorization will fail to match.',
         details: {
           description: 'Controls which user group memberships Microsoft Entra ID emits inside the "groups" claim of the ID token.',
-          allowedValues: [
-            { value: 'null (None)', description: 'No groups claim emitted.', clavisterImpact: 'Firewall rules based on AD groups will never match.' },
-            { value: '"SecurityGroup"', description: 'Emits security groups and directory roles as Object IDs.', clavisterImpact: 'Recommended for Clavister firewall group policies.' },
-            { value: '"All"', description: 'Emits all groups including distribution lists.', clavisterImpact: 'Emits all groups.' },
-          ],
+          allowedValues: standardGroupAllowedValues,
           currentImpact: 'Users will be authenticated, but will have 0 groups in their token. If your Clavister NetWall requires group membership to grant VPN access, login will be denied by the firewall.',
-          recommendation: 'Edit the manifest and change "groupMembershipClaims": null to "groupMembershipClaims": "SecurityGroup", or configure Token Configuration -> Add groups claim in Azure portal.',
+          recommendation: 'Edit the manifest and change "groupMembershipClaims": null to "groupMembershipClaims": "SecurityGroup" (or "ApplicationGroup"), or configure Token Configuration -> Add groups claim in Azure portal.',
         },
       });
     }
