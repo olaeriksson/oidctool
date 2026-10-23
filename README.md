@@ -70,7 +70,7 @@ npm start
 
 ## How to Troubleshoot Clavister & Entra ID
 
-### Option A: Automatic Import from Entra ID Manifest
+### Option A: Automatic Import & In-Depth Manifest Audit
 1. Click the **Import info** button in the top of the Configuration panel and select **EntraID App Manifest**.
 2. Paste the JSON manifest from your Entra ID App registration (*Entra ID &rarr; App registrations &rarr; Manifest*).
 3. Click **Parse & Apply**. The tool will automatically:
@@ -78,7 +78,16 @@ npm start
    - Extract registered **Redirect URIs** and select `http://127.0.0.1/oneconnect/oauth`.
    - Match the **Clavister OneConnect** profile.
    - Infer the OIDC Discovery Endpoint from `publisherDomain` (if available).
-   - Flag any policy warnings (e.g. if `groupMembershipClaims` is disabled).
+   - Perform an 8-point **Manifest Audit** across:
+     - **Public Client Status** (`publicClient` / `isFallbackPublicClient`)
+     - **Group Membership Claims** (`groupMembershipClaims`)
+     - **Sign-in Audience** (`signInAudience`)
+     - **Optional Claims** (`optionalClaims`)
+     - **Redirect URI Validation** (`publicClient.redirectUris`)
+     - **Access Token Version** (`api.requestedAccessTokenVersion`)
+     - **API Permissions** (`requiredResourceAccess`: Microsoft Graph `User.Read`)
+     - **Implicit Grant Settings** (`web.implicitGrantSettings`)
+   - Navigate to the **Manifest Audit** tab where each check is color-coded (Green/Amber/Red) with an **(i) Field Info** button detailing field purpose, allowed values, current consequences, and Clavister recommendations.
 
 ### Option B: Manual Configuration
 1. **Select Client Preset**: Choose **Clavister OneConnect (VPN)**.

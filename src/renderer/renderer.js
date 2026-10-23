@@ -4,6 +4,7 @@ let clientPresets = [];
 let currentPreset = null;
 let availableImporters = [];
 let activeImporter = null;
+let latestManifestAudit = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   initTabs();
@@ -13,6 +14,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadPresets();
   await initImporters();
   initImportModal();
+  initFieldInfoModal();
   restoreSavedFormValues();
   bindFormEvents();
 });
@@ -391,20 +393,191 @@ function applyImportedData(data) {
   // 7. Save form values to storage
   saveFormValues();
 
-  // 8. Status Banner notification
+  // 8. Render Manifest Audit if present
+  if (data.audit) {
+    latestManifestAudit = data.audit;
+    renderManifestAudit(data.audit, data.displayName, data.clientId);
+    switchTab('tab-manifest');
+  }
+
+  // 9. Status Banner notification
   const appName = data.displayName || 'Application';
   let bannerMessage = `Imported settings for "${appName}". Client ID set to ${data.clientId} with ${data.redirectUris.length} redirect URI(s).`;
 
-  if (data.insights && data.insights.length > 0) {
-    const warning = data.insights.find((i) => i.level === 'warning');
-    if (warning) {
-      bannerMessage += ` Note: ${warning.message}`;
-      updateStatusBanner('warning', `Imported: ${appName}`, bannerMessage);
+  if (data.audit) {
+    bannerMessage += ` Audit: ${data.audit.passedCount}/${data.audit.totalChecks} checks passed.`;
+    if (data.audit.failedCount > 0) {
+      updateStatusBanner('error', `Imported: ${appName} (${data.audit.failedCount} Actions Required)`, bannerMessage);
+      return;
+    } else if (data.audit.warningCount > 0) {
+      updateStatusBanner('warning', `Imported: ${appName} (${data.audit.warningCount} Warnings)`, bannerMessage);
       return;
     }
   }
 
   updateStatusBanner('success', `Imported: ${appName}`, bannerMessage);
+}
+
+/**
+ * Render Manifest Audit Tab
+ */
+function renderManifestAudit(audit, displayName, clientId) {
+  const emptyEl = document.getElementById('manifest-empty');
+  const detailsEl = document.getElementById('manifest-details');
+
+  if (!audit) {
+    emptyEl.classList.remove('hidden');
+    detailsEl.classList.add('hidden');
+    return;
+  }
+
+  emptyEl.classList.add('hidden');
+  detailsEl.classList.remove('hidden');
+
+  // Header info
+  document.getElementById('audit-app-name').textContent = displayName || 'Entra ID Application';
+  document.getElementById('audit-app-id').textContent = `Client ID (appId): ${clientId || '-'}`;
+
+  // Summary pills
+  const pillsContainer = document.getElementById('audit-pills');
+  pillsContainer.innerHTML = `
+    <span class="audit-pill pill-pass">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      ${audit.passedCount} Passed
+    </span>
+    ${audit.warningCount > 0 ? `
+      <span class="audit-pill pill-warn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        ${audit.warningCount} Warning${audit.warningCount > 1 ? 's' : ''}
+      </span>
+    ` : ''}
+    ${audit.failedCount > 0 ? `
+      <span class="audit-pill pill-fail">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+        ${audit.failedCount} Action Required
+      </span>
+    ` : ''}
+  `;
+
+  // Tab Badge
+  const badge = document.getElementById('badge-manifest-audit');
+  badge.textContent = `${audit.passedCount}/${audit.totalChecks}`;
+  badge.className = `badge badge-audit ${audit.overallHealth}`;
+  badge.classList.remove('hidden');
+
+  // Audit Cards
+  const cardsList = document.getElementById('audit-cards-list');
+  cardsList.innerHTML = '';
+
+  const icons = {
+    pass: '✅',
+    warn: '⚠️',
+    fail: '❌',
+  };
+
+  audit.checks.forEach((check) => {
+    const card = document.createElement('div');
+    card.className = `audit-card ${check.status}`;
+    card.innerHTML = `
+      <div class="audit-card-icon">${icons[check.status] || 'ℹ️'}</div>
+      <div class="audit-card-content">
+        <div class="audit-card-title-row">
+          <span class="audit-card-title">${escapeHtml(check.label)}</span>
+          <span class="audit-card-field">${escapeHtml(check.field)}</span>
+          <span class="audit-card-value">${escapeHtml(check.currentValueDisplay)}</span>
+        </div>
+        <div class="audit-card-summary">${escapeHtml(check.summary)}</div>
+      </div>
+      <div class="audit-card-actions">
+        <button type="button" class="btn-audit-info" data-check-id="${check.id}" title="View detailed field documentation and consequences">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          Field Info
+        </button>
+      </div>
+    `;
+
+    const infoBtn = card.querySelector('.btn-audit-info');
+    infoBtn.addEventListener('click', () => {
+      openFieldInfoModal(check);
+    });
+
+    cardsList.appendChild(card);
+  });
+}
+
+/**
+ * Open Field Info Detail Modal
+ */
+function openFieldInfoModal(check) {
+  document.getElementById('field-info-title').textContent = check.label;
+  document.getElementById('field-info-name').textContent = `Field: ${check.field}`;
+  document.getElementById('field-info-desc').textContent = check.details?.description || '-';
+
+  // Allowed values table
+  const tbody = document.getElementById('tbody-allowed-values');
+  tbody.innerHTML = '';
+  if (Array.isArray(check.details?.allowedValues)) {
+    check.details.allowedValues.forEach((val) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><code>${escapeHtml(val.value)}</code></td>
+        <td>${escapeHtml(val.description)}</td>
+        <td>${escapeHtml(val.clavisterImpact)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Current Impact Box
+  const impactBox = document.getElementById('field-info-impact');
+  impactBox.className = `current-impact-box ${check.status}`;
+  impactBox.innerHTML = `
+    <div><strong>Current Setting:</strong> <code>${escapeHtml(check.currentValueDisplay)}</code></div>
+    <div class="mt-1">${escapeHtml(check.details?.currentImpact || '')}</div>
+  `;
+
+  // Recommendation
+  document.getElementById('field-info-rec').textContent = check.details?.recommendation || 'No specific action required.';
+
+  // Show Modal
+  document.getElementById('modal-field-info').classList.remove('hidden');
+}
+
+/**
+ * Close Field Info Modal
+ */
+function closeFieldInfoModal() {
+  document.getElementById('modal-field-info').classList.add('hidden');
+}
+
+/**
+ * Initialize Field Info Modal Listeners
+ */
+function initFieldInfoModal() {
+  const modal = document.getElementById('modal-field-info');
+  const btnClose = document.getElementById('btn-field-info-close');
+  const btnDismiss = document.getElementById('btn-field-info-dismiss');
+
+  btnClose.addEventListener('click', closeFieldInfoModal);
+  btnDismiss.addEventListener('click', closeFieldInfoModal);
+
+  // Close on backdrop click
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeFieldInfoModal();
+    }
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+      closeFieldInfoModal();
+    }
+  });
 }
 
 /**

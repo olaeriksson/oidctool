@@ -152,6 +152,15 @@
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
             Diagnostics
           </button>
+          <button class="tab-btn" data-tab="tab-manifest" id="tab-btn-manifest">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <path d="M9 15l2 2 4-4"></path>
+            </svg>
+            Manifest Audit
+            <span class="badge badge-audit hidden" id="badge-manifest-audit"></span>
+          </button>
           <button class="tab-btn" data-tab="tab-identity">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
             User Identity &amp; Groups
@@ -181,6 +190,34 @@
             </div>
             <div id="diagnostics-list" class="diagnostics-cards hidden">
               <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Tab: Manifest Audit -->
+          <div id="tab-manifest" class="tab-content">
+            <div id="manifest-empty" class="empty-placeholder">
+              <div class="empty-icon">📋</div>
+              <h3>No Manifest Imported</h3>
+              <p>Click "Import info" &rarr; "EntraID App Manifest" to import and run an in-depth audit on your Entra ID application registration.</p>
+            </div>
+            <div id="manifest-details" class="manifest-layout hidden">
+              <!-- Header / Summary Card -->
+              <div class="audit-summary-card">
+                <div class="audit-summary-header">
+                  <div>
+                    <h3 id="audit-app-name">Application Name</h3>
+                    <span class="audit-subtitle" id="audit-app-id">appId: -</span>
+                  </div>
+                  <div class="audit-pills" id="audit-pills">
+                    <!-- Populated dynamically -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- Checks Grid -->
+              <div class="audit-cards-grid" id="audit-cards-list">
+                <!-- Populated dynamically -->
+              </div>
             </div>
           </div>
 
@@ -408,6 +445,56 @@
           </svg>
           Parse &amp; Apply
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Field Info Modal Dialog -->
+  <div id="modal-field-info" class="modal-overlay hidden">
+    <div class="modal-card modal-card-wide">
+      <div class="modal-header">
+        <div>
+          <h3 id="field-info-title">Field Information</h3>
+          <span class="modal-field-id" id="field-info-name">field.name</span>
+        </div>
+        <button type="button" id="btn-field-info-close" class="btn-close" title="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="field-info-section">
+          <h4>Field Purpose</h4>
+          <p id="field-info-desc">-</p>
+        </div>
+
+        <div class="field-info-section">
+          <h4>Allowed Values in Microsoft Entra ID</h4>
+          <div class="table-responsive">
+            <table class="data-table" id="table-allowed-values">
+              <thead>
+                <tr>
+                  <th>Value</th>
+                  <th>Description</th>
+                  <th>Clavister Impact</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-allowed-values"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="field-info-section">
+          <h4>Current Value Analysis &amp; Consequence</h4>
+          <div class="current-impact-box" id="field-info-impact">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <div class="field-info-section">
+          <h4>Recommendation for Clavister OneConnect</h4>
+          <div class="recommendation-box" id="field-info-rec">-</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btn-field-info-dismiss" class="btn btn-secondary btn-sm">Close</button>
       </div>
     </div>
   </div>
