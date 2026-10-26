@@ -2,9 +2,9 @@
 
 A cross-platform desktop application designed for testing, inspecting, and troubleshooting OpenID Connect (OIDC) workflows, token validation, and identity provider integrations.
 
-Specifically optimized for troubleshooting **Clavister Firewall** authentication against **Microsoft Entra ID (Azure AD)** and emulating the **Clavister OneConnect** client login flow.
+Specifically optimized for troubleshooting **Clavister Firewall** (NetWall) authentication against **Microsoft Entra ID (Azure AD)** and emulating the **Clavister OneConnect** client login flow. However, because it is built upon standard OpenID Connect specifications, it works equally well for testing, inspecting, and diagnosing all types of OIDC connections and identity providers (such as Okta, Keycloak, Ping Identity, Google, Auth0, or custom OAuth2/OIDC servers).
 
-Built with **JavaScript**, **Node.js**, and **Electron**, targeting both **Linux** and **Windows**.
+> **Privacy & Local Execution**: OIDC Tool is a self-contained local desktop application running entirely on your own machine. No tokens, secrets, credentials, manifests, or diagnostic payloads are ever transmitted to any third-party server or cloud service. Everything remains strictly on your local computer.
 
 ---
 
@@ -13,7 +13,7 @@ Built with **JavaScript**, **Node.js**, and **Electron**, targeting both **Linux
 - **Dual-Sided Emulation**: Emulates both the client side (e.g. Clavister OneConnect) and the firewall server side to capture and inspect all authentication data in one place.
 - **Client Presets**:
   - **Clavister OneConnect (VPN)**: Preconfigured with standard OneConnect App ID, redirect URIs, and PKCE flow.
-  - **Custom / Generic Client**: Extensible profile for testing any OIDC client or identity provider.
+  - **Custom / Generic Client**: Extensible profile for testing any generic OIDC client or identity provider.
 - **Internal Redirect Interception**: Captures redirect URIs (`http://127.0.0.1/oneconnect/oauth` and `com.clavister.oneconnect://oauth/`) natively within Electron's internal browser session. Does not require opening or binding to port 80 or registering OS protocol handlers.
 - **Clavister Firewall Diagnostics**:
   - ID Token validation & algorithm check
@@ -21,6 +21,9 @@ Built with **JavaScript**, **Node.js**, and **Electron**, targeting both **Linux
   - Group membership claims inspection (highlights missing groups or Entra ID `groupMembershipClaims` misconfigurations)
   - Audience (`aud`) validation against configured Client ID
   - Token expiration and lifetime calculations
+- **Entra ID Manifest Audit**:
+  - 8-point automated audit engine (Public Client status, group claims, redirect URIs, optional claims, token version, Graph permissions, implicit grant)
+  - Color-coded results (Pass / Warning / Action Required) with full documentation for each setting and its direct consequence on Clavister NetWall.
 - **Deep Token & Transaction Inspection**:
   - Decoded ID Token, Access Token, and Refresh Token (Headers & Claims JSON)
   - Raw HTTP request and response payloads matching what the firewall exchanges with Entra ID
@@ -34,9 +37,7 @@ Built with **JavaScript**, **Node.js**, and **Electron**, targeting both **Linux
 - **Author**: [Ola Eriksson](https://github.com/olaeriksson)
 - **Repository**: [https://github.com/olaeriksson/oidctool](https://github.com/olaeriksson/oidctool)
 - **Target Platforms**: Linux (AppImage, .deb) and Windows (NSIS installer .exe, portable .zip)
-- **Framework**: Electron
-- **Language**: JavaScript / Node.js
-- **Language Policy**: All source code, documentation, identifiers, commits, and UI copy are maintained strictly in **English**.
+- **Language Policy**: All source code, documentation, identifiers, and UI copy are maintained strictly in **English**.
 
 ---
 
@@ -44,7 +45,7 @@ Built with **JavaScript**, **Node.js**, and **Electron**, targeting both **Linux
 
 This tool was designed and developed by **Ola Eriksson**.
 
-As a network and cybersecurity specialist working daily with the design, architecture, and implementation of network and firewall solutions of all scales, I repeatedly encountered the need for a dedicated inspection tool when configuring and testing OpenID Connect (OIDC) single sign-on (SSO) integrations. 
+As a network and cybersecurity specialist working daily with the design, architecture, and implementation of network and firewall solutions of all scales, I repeatedly encountered the need for a dedicated inspection tool when configuring and testing OpenID Connect (OIDC) single sign-on (SSO) integrations.
 
 In enterprise deployments—such as connecting client VPNs to Microsoft Entra ID (formerly Azure AD)—troubleshooting issues like redirect misconfigurations, missing token claims, omitted user group memberships, or tenant manifest errors can be time-consuming without deep visibility into the exact token exchange.
 
@@ -55,33 +56,51 @@ I work extensively with **Clavister NetWall** next-generation firewalls, which i
 
 ---
 
-## Prerequisites
+## Installation & Running
 
-- [Node.js](https://nodejs.org/) (version 18.x or later recommended; tested on v20.x LTS)
-- [npm](https://www.npmjs.com/) (version 9.x or later)
+Pre-built standalone packages for Linux and Windows are available for download under [Releases](https://github.com/olaeriksson/oidctool/releases). Standalone binaries include the complete runtime environment and do not require Node.js or npm to be installed on your computer.
+
+### Windows
+
+- **Installer (`.exe`)**:
+  Download `OIDC-Tool-Setup-<version>.exe` and run the installer. It will install the application and add shortcuts to your Start Menu and Desktop.
+- **Portable Version (`.zip`)**:
+  Download `OIDC-Tool-<version>-win.zip`, extract the archive to any folder, and double-click `OIDC Tool.exe` to run immediately without installation.
+
+### Linux
+
+- **Debian / Ubuntu Package (`.deb`)**:
+  Download `oidctool_<version>_amd64.deb` and install it via terminal:
+  ```bash
+  sudo dpkg -i oidctool_<version>_amd64.deb
+  # Or with apt to automatically resolve any missing system dependencies:
+  sudo apt install ./oidctool_<version>_amd64.deb
+  ```
+  Once installed, launch **OIDC Tool** from your desktop application launcher or run `oidctool` in a terminal.
+
+- **AppImage (`.AppImage`)**:
+  Download `OIDC-Tool-<version>.AppImage`, mark it as executable, and run it:
+  ```bash
+  chmod +x OIDC-Tool-<version>.AppImage
+  ./OIDC-Tool-<version>.AppImage
+  ```
 
 ---
 
-## Getting Started
+## Troubleshooting (Linux)
 
-### 1. Installation
+### Running AppImage on Ubuntu 24.04+
+On Ubuntu 24.04 LTS and newer distributions, unprivileged user namespaces are restricted by default AppArmor security profiles.
 
-Clone the repository and install dependencies:
-
-```bash
-git clone https://github.com/olaeriksson/oidctool.git
-cd oidctool
-npm install
-```
-
-### 2. Running in Development
-
-To start the desktop application in development mode:
-
-```bash
-npm start
-```
-*(or `npm run dev`)*
+- **Direct Terminal Launch**: If launching the AppImage from the terminal fails with an unprivileged user namespace or SUID sandbox error, append the `--no-sandbox` flag:
+  ```bash
+  ./OIDC-Tool-<version>.AppImage --no-sandbox
+  ```
+- **Native Package (.deb)**: Alternatively, install the native `.deb` package (`sudo apt install ./oidctool_<version>_amd64.deb`), which integrates directly with system desktop services and avoids sandboxing restrictions.
+- **System-wide Configuration**: If you prefer to enable unprivileged user namespaces system-wide for AppImages:
+  ```bash
+  sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+  ```
 
 ---
 
@@ -122,106 +141,3 @@ npm start
    - Check the **Diagnostics** tab to see if your account contains the necessary UPN/email and group claims.
    - If groups are missing, verify that `groupMembershipClaims` is set to `"SecurityGroup"` or `"All"` in your Entra ID application manifest.
    - Inspect **Tokens & Claims** and **HTTP Transactions** to review the exact payloads exchanged with Entra ID.
-
----
-
-## Building and Packaging
-
-The project uses `electron-builder` to produce standalone distribution packages for both Linux and Windows. Packaging configuration is maintained in `package.json`.
-
-### Build for Linux
-
-Generates `.AppImage` and `.deb` packages in the `dist/` directory:
-
-```bash
-npm run package:linux
-```
-
-#### Running the AppImage:
-```bash
-chmod +x dist/*.AppImage
-"./dist/OIDC Tool-0.1.0.AppImage" --no-sandbox
-```
-*(On Ubuntu 24.04+, `--no-sandbox` is required when invoking directly from the terminal due to AppArmor unprivileged user namespace restrictions).*
-
-#### Installing the Native Debian/Ubuntu Package (.deb):
-```bash
-sudo dpkg -i dist/oidctool_0.1.0_amd64.deb
-```
-
-### Build for Windows
-
-Generates an NSIS setup installer (`.exe`) and a portable `.zip` archive:
-
-```bash
-npm run package:win
-```
-
-> **Note on Windows builds on Linux**:
-> Cross-compiling Windows NSIS installers on Linux requires `wine` installed on the host system.
-
-### Unpacked Directory Build (Testing)
-
-To verify the build output structure without compressing into final installers:
-
-```bash
-npm run package:dir
-```
-
----
-
-## Troubleshooting (Linux)
-
-### SUID Sandbox / User Namespaces on Ubuntu 24.04+
-On Ubuntu 24.04 LTS, unprivileged user namespaces are restricted by default.
-- **Running AppImage**: Always pass `--no-sandbox` when running directly from the terminal:
-  ```bash
-  "./dist/OIDC Tool-0.1.0.AppImage" --no-sandbox
-  ```
-- **Alternative (system-wide sysctl)**: Temporarily allow unprivileged user namespaces system-wide:
-  ```bash
-  sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-  ```
-- **Native Package (.deb)**: Install the `.deb` package (`sudo dpkg -i dist/oidctool_*.deb`), which integrates directly with the system desktop launcher.
-
----
-
-## Project Structure
-
-```text
-oidctool/
-├── .agents/
-│   └── rules/
-│       └── project-rules.md   # Agent customization guidelines
-├── src/
-│   ├── main/
-│   │   ├── main.js            # Electron main process & IPC handlers
-│   │   ├── auth/
-│   │   │   ├── oidc-client.js # Discovery, PKCE, token exchange & diagnostics
-│   │   │   └── auth-window.js # Interactive login window & redirect interceptor
-│   │   ├── importers/
-│   │   │   ├── index.js       # Configuration importers registry
-│   │   │   └── entra-manifest.js # Entra ID manifest parser & audit engine
-│   │   └── presets/
-│   │       └── clients.js     # Extensible client profiles (OneConnect, custom)
-│   ├── preload/
-│   │   └── preload.js         # Secure contextBridge preload script
-│   └── renderer/
-│       ├── index.html         # Application UI structure
-│       ├── styles.css         # UI design system & light enterprise theme
-│       └── renderer.js        # UI logic, claim renderers, audit & modals
-├── .gitignore                 # Git ignore rules for node & build artifacts
-├── AGENTS.md                  # Development rules and open-source standards
-├── LICENSE                    # MIT Open Source License
-├── package.json               # Dependencies, scripts, and electron-builder config
-└── README.md                  # User & developer documentation
-```
-
----
-
-## Development Guidelines
-
-1. **Language**: English only across all codebase files, identifiers, and documentation.
-2. **Open Source Quality**: Keep code clean, modular, and never commit secrets or environment credentials.
-3. **Packaging Integrity**: Whenever the application structure or dependencies change, packaging configurations in `package.json` must be updated and verified for both Linux and Windows.
-4. **Continuous Documentation**: Update this `README.md` file whenever features, installation steps, or requirements change.
